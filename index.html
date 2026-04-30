@@ -222,16 +222,52 @@
             });
         });
 
-        function enviarFeedback() {
-            if(!selectedValue) {
-                alert("Por favor, selecione uma carinha antes de enviar.");
-                return;
-            }
-            // Aqui você conectaria com seu backend ou Firebase
-            alert("Feedback enviado com sucesso! Obrigado, Agente.");
-            document.getElementById('sugestao').value = "";
-            buttons.forEach(b => b.classList.remove('active'));
-        }
+       async function enviarFeedback() {
+    const sugestao = document.getElementById('sugestao').value;
+    const btnEnviar = document.querySelector('.submit-btn');
+
+    if (!selectedValue) {
+        alert("Por favor, selecione uma carinha antes de enviar.");
+        return;
+    }
+
+    // Feedback visual de carregamento
+    btnEnviar.innerText = "ENVIANDO...";
+    btnEnviar.style.opacity = "0.5";
+    btnEnviar.disabled = true;
+
+    const url = 'SUA_URL_DO_DEPLOY_AQUI'; // Você vai colar a URL aqui depois
+
+    const dados = {
+        data: new Date().toLocaleString('pt-BR'),
+        satisfacao: selectedValue,
+        sugestao: sugestao
+    };
+
+    try {
+        await fetch(url, {
+            method: 'POST',
+            mode: 'no-cors', // Importante para Google Apps Script
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+
+        alert("Relatório enviado com sucesso, Agente!");
+        
+        // Limpar formulário
+        document.getElementById('sugestao').value = "";
+        buttons.forEach(b => b.classList.remove('active'));
+        selectedValue = null;
+
+    } catch (error) {
+        alert("Erro na conexão com a central.");
+        console.error(error);
+    } finally {
+        btnEnviar.innerText = "ENVIAR RELATÓRIO";
+        btnEnviar.style.opacity = "1";
+        btnEnviar.disabled = false;
+    }
+}
     </script>
 </body>
 </html>
