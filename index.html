@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vegas Vigilância | Feedback Interno</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --deep-black: #050505;
+            --slate-gray: #1a1a1a;
+            --silver: #e0e0e0;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--deep-black);
+            color: var(--silver);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Fundo Geométrico */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 80%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px) 0 0 / 50px 50px,
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px) 0 0 / 50px 50px;
+            z-index: -1;
+        }
+
+        .container {
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(0, 242, 255, 0.3), transparent);
+            z-index: -1;
+            border-radius: 17px;
+        }
+
+        .logo img {
+            max-width: 200px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2));
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        /* Sistema de Carinhas */
+        .feedback-emojis {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .emoji-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+
+        .emoji-btn i {
+            font-size: 3rem;
+            color: var(--silver);
+        }
+
+        .emoji-btn:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        /* Cores específicas no hover */
+        .angry:hover i { color: #ff4d4d; text-shadow: 0 0 15px #ff4d4d; }
+        .neutral:hover i { color: #ffd900; text-shadow: 0 0 15px #ffd900; }
+        .happy:hover i { color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue); }
+
+        .emoji-btn.active {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Campo de Sugestão */
+        .input-group {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: var(--neon-blue);
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 15px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        .submit-btn {
+            margin-top: 30px;
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+        }
+
+        .submit-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .anonymous-tag {
+            font-size: 0.7rem;
+            margin-top: 15px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">
+            <img src="assets/logovegas.jpg" alt="Vegas Vigilância">
+        </div>
+
+        <h1>Pesquisa de Satisfação</h1>
+
+        <div class="feedback-emojis">
+            <button type="button" class="emoji-btn angry" title="Insatisfeito">
+                <i class="fas fa-frown"></i>
+            </button>
+            <button type="button" class="emoji-btn neutral" title="Regular">
+                <i class="fas fa-meh"></i>
+            </button>
+            <button type="button" class="emoji-btn happy" title="Satisfeito">
+                <i class="fas fa-smile-beam"></i>
+            </button>
+        </div>
+
+        <div class="input-group">
+            <label>Sugestões ou Críticas (Anônimo)</label>
+            <textarea id="sugestao" rows="4" placeholder="Como podemos melhorar seu ambiente de trabalho?"></textarea>
+        </div>
+
+        <button class="submit-btn" onclick="enviarFeedback()">Enviar Relatório</button>
+
+        <p class="anonymous-tag">SISTEMA 100% ANÔNIMO // ENCRIPTADO</p>
+    </div>
+
+    <script>
+        // Lógica simples para selecionar as carinhas
+        const buttons = document.querySelectorAll('.emoji-btn');
+        let selectedValue = null;
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedValue = btn.title;
+            });
+        });
+
+        function enviarFeedback() {
+            if(!selectedValue) {
+                alert("Por favor, selecione uma carinha antes de enviar.");
+                return;
+            }
+            // Aqui você conectaria com seu backend ou Firebase
+            alert("Feedback enviado com sucesso! Obrigado, Agente.");
+            document.getElementById('sugestao').value = "";
+            buttons.forEach(b => b.classList.remove('active'));
+        }
+    </script>
+</body>
+</html>
