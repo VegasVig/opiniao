@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vegas Vigilância | Feedback Interno</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>Vegas Vigilância | Central de Escuta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-       :root {
-    --metal-silver: #c0c0c0; /* Prata base */
-    --bright-silver: #e0e0e0; /* Prata brilhante para destaques */
-    --deep-black: #050505;
-    --slate-gray: #1a1a1a;
-    --border-silver: rgba(192, 192, 192, 0.2);
-    --glow-silver: rgba(255, 255, 255, 0.2);
-}
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-dim: rgba(0, 242, 255, 0.6);
+            --silver: #c0c0c0;
+            --bright: #e8e8e8;
+            --deep-black: #050505;
+            --slate: #0d0d0f;
+            --glass-bg: rgba(15, 17, 22, 0.75);
+            --user-bubble: rgba(0, 242, 255, 0.12);
+            --bot-bubble: rgba(255, 255, 255, 0.04);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -25,16 +28,16 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 16px;
             overflow: hidden;
         }
 
-        /* Fundo Geométrico */
         body::before {
             content: "";
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                radial-gradient(circle at 50% 50%, rgba(0, 242, 255, 0.05) 0%, transparent 80%),
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 30%, rgba(0, 242, 255, 0.06) 0%, transparent 70%),
                 linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px) 0 0 / 50px 50px,
                 linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px) 0 0 / 50px 50px;
             z-index: -1;
@@ -42,232 +45,352 @@
 
         .container {
             background: var(--glass-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 15px;
+            border: 1px solid rgba(0, 242, 255, 0.15);
+            backdrop-filter: blur(14px);
+            border-radius: 16px;
             width: 100%;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            max-width: 520px;
+            height: min(88vh, 760px);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 242, 255, 0.03);
             position: relative;
+            overflow: hidden;
         }
 
         .container::before {
             content: "";
             position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(45deg, transparent, rgba(0, 242, 255, 0.3), transparent);
+            inset: -2px;
+            background: linear-gradient(135deg, transparent 30%, rgba(0, 242, 255, 0.25), transparent 70%);
             z-index: -1;
-            border-radius: 17px;
+            border-radius: 18px;
         }
 
-        .logo img {
-            max-width: 200px;
-            margin-bottom: 30px;
-            filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.2));
+        header {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid rgba(0, 242, 255, 0.12);
+            text-align: center;
+            flex-shrink: 0;
         }
 
-        h1 {
+        header img { max-width: 140px; margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(0,242,255,0.2)); }
+
+        header h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 700;
             letter-spacing: 2px;
-            margin-bottom: 30px;
             color: #fff;
             text-transform: uppercase;
         }
 
-        /* Sistema de Carinhas */
-        .feedback-emojis {
+        .status-dot {
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--neon-blue);
+            box-shadow: 0 0 8px var(--neon-blue);
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .sub { font-size: 0.7rem; letter-spacing: 2px; color: var(--neon-dim); margin-top: 6px; }
+
+        /* Chat */
+        .chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
+            flex-direction: column;
+            gap: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-dim) transparent;
         }
+        .chat::-webkit-scrollbar { width: 5px; }
+        .chat::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 3px; }
 
-        .emoji-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: grayscale(100%);
-            opacity: 0.6;
+        .msg {
+            max-width: 82%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 1rem;
+            line-height: 1.45;
+            animation: fadeIn 0.3s ease;
         }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
 
-        .emoji-btn i {
-            font-size: 3rem;
-            color: var(--silver);
+        .msg.bot {
+            background: var(--bot-bubble);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-left: 2px solid var(--neon-blue);
+            align-self: flex-start;
+            color: var(--bright);
+            border-bottom-left-radius: 4px;
         }
-
-        .emoji-btn:hover {
-            filter: grayscale(0%);
-            opacity: 1;
-            transform: scale(1.2);
+        .msg.user {
+            background: var(--user-bubble);
+            border: 1px solid rgba(0,242,255,0.2);
+            align-self: flex-end;
+            color: #fff;
+            border-bottom-right-radius: 4px;
         }
+        .msg.typing { color: var(--neon-dim); font-style: italic; }
+        .msg.typing span { animation: blink 1.4s infinite; }
+        @keyframes blink { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
-        /* Cores específicas no hover */
-        .angry:hover i { color: #ff4d4d; text-shadow: 0 0 15px #ff4d4d; }
-        .neutral:hover i { color: #ffd900; text-shadow: 0 0 15px #ffd900; }
-        .happy:hover i { color: green; text-shadow: 0 0 15px green; }
-
-        .emoji-btn.active {
-            filter: grayscale(0%);
-            opacity: 1;
-            transform: scale(1.1);
+        /* Seletor de humor inicial */
+        .mood-row {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            padding: 8px 0 4px;
         }
-
-        /* Campo de Sugestão */
-        .input-group {
-            text-align: left;
-            margin-top: 20px;
+        .mood-btn {
+            background: none; border: none; cursor: pointer;
+            filter: grayscale(100%); opacity: 0.55;
+            transition: 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
         }
+        .mood-btn i { font-size: 2.6rem; color: var(--silver); }
+        .mood-btn:hover, .mood-btn.active { filter: grayscale(0); opacity: 1; transform: scale(1.18); }
+        .mood-btn.angry.active i, .mood-btn.angry:hover i { color:#ff4d4d; text-shadow:0 0 14px #ff4d4d; }
+        .mood-btn.neutral.active i, .mood-btn.neutral:hover i { color:#ffd900; text-shadow:0 0 14px #ffd900; }
+        .mood-btn.happy.active i, .mood-btn.happy:hover i { color:#2ecc71; text-shadow:0 0 14px #2ecc71; }
 
-        label {
-            display: block;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            color: var(--neon-blue);
-            letter-spacing: 1px;
+        /* Input area */
+        .input-bar {
+            padding: 14px 18px 18px;
+            border-top: 1px solid rgba(0,242,255,0.12);
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-shrink: 0;
         }
-
         textarea {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            padding: 15px;
+            flex: 1;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px 14px;
             color: #fff;
             font-family: 'Rajdhani', sans-serif;
             font-size: 1rem;
             resize: none;
             outline: none;
-            transition: 0.3s;
+            max-height: 110px;
+            transition: 0.2s;
         }
+        textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,242,255,0.12); }
 
-        textarea:focus {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
-        }
-
-        .submit-btn {
-            margin-top: 30px;
-            width: 100%;
-            background: transparent;
+        .icon-btn {
+            width: 48px; height: 48px;
+            flex-shrink: 0;
+            border-radius: 50%;
             border: 1px solid var(--neon-blue);
+            background: transparent;
             color: var(--neon-blue);
-            padding: 15px;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            text-transform: uppercase;
             cursor: pointer;
-            transition: 0.3s;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+            font-size: 1.15rem;
+            transition: 0.2s;
+            display: grid; place-items: center;
         }
+        .icon-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 16px var(--neon-blue); }
+        .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-        .submit-btn:hover {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 20px var(--neon-blue);
+        .mic-btn.recording {
+            background: #ff4d4d; border-color: #ff4d4d; color: #fff;
+            box-shadow: 0 0 0 0 rgba(255,77,77,0.6);
+            animation: ring 1.3s infinite;
         }
+        @keyframes ring { 0%{box-shadow:0 0 0 0 rgba(255,77,77,0.6)} 70%{box-shadow:0 0 0 14px rgba(255,77,77,0)} 100%{box-shadow:0 0 0 0 rgba(255,77,77,0)} }
 
-        .anonymous-tag {
-            font-size: 0.7rem;
-            margin-top: 15px;
-            color: rgba(255,255,255,0.3);
-            letter-spacing: 2px;
+        .footer-tag {
+            text-align: center; font-size: 0.65rem;
+            color: rgba(255,255,255,0.25); letter-spacing: 2px;
+            padding-bottom: 10px;
         }
+        .voice-toggle {
+            background: none; border: none; color: var(--neon-dim);
+            cursor: pointer; font-size: 1.15rem; align-self: center;
+        }
+        .voice-toggle.muted { color: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <div class="logo">
-            <img src="assets/logovegas.jpg" alt="Vegas Vigilância">
+        <header>
+            <img src="./assets/logovegas.png" alt="Vegas Vigilância"
+                 onerror="this.style.display='none'">
+            <h1>Central de Escuta</h1>
+            <div class="sub"><span class="status-dot"></span>CANAL SEGURO • 100% ANÔNIMO</div>
+        </header>
+
+        <div class="chat" id="chat">
+            <div class="msg bot">
+                Olá, funcionário. Este é um canal anônimo e seguro. Comece escolhendo como você se sente hoje 👇
+            </div>
+            <div class="mood-row" id="moodRow">
+                <button class="mood-btn angry" data-mood="Insatisfeito" title="Insatisfeito"><i class="fas fa-frown"></i></button>
+                <button class="mood-btn neutral" data-mood="Regular" title="Regular"><i class="fas fa-meh"></i></button>
+                <button class="mood-btn happy" data-mood="Satisfeito" title="Satisfeito"><i class="fas fa-smile-beam"></i></button>
+            </div>
         </div>
 
-        <h1>Pesquisa de Satisfação</h1>
-
-        <div class="feedback-emojis">
-            <button type="button" class="emoji-btn angry" title="Insatisfeito">
-                <i class="fas fa-frown"></i>
-            </button>
-            <button type="button" class="emoji-btn neutral" title="Regular">
-                <i class="fas fa-meh"></i>
-            </button>
-            <button type="button" class="emoji-btn happy" title="Satisfeito">
-                <i class="fas fa-smile-beam"></i>
-            </button>
+        <div class="input-bar">
+            <button class="voice-toggle" id="voiceToggle" title="Ativar/desativar voz"><i class="fas fa-volume-up"></i></button>
+            <textarea id="input" rows="1" placeholder="Escreva ou use o microfone..." disabled></textarea>
+            <button class="icon-btn mic-btn" id="micBtn" title="Gravar áudio" disabled><i class="fas fa-microphone"></i></button>
+            <button class="icon-btn send-btn" id="sendBtn" title="Enviar" disabled><i class="fas fa-paper-plane"></i></button>
         </div>
-
-        <div class="input-group">
-            <label>Sugestões ou Críticas (Anônimo)</label>
-            <textarea id="sugestao" rows="4" placeholder="Como podemos melhorar seu ambiente de trabalho?"></textarea>
-        </div>
-
-        <button class="submit-btn" onclick="enviarFeedback()">Enviar Relatório</button>
-
-        <p class="anonymous-tag">SISTEMA 100% ANÔNIMO // ENCRIPTADO</p>
+        <div class="footer-tag">SISTEMA ENCRIPTADO • SEM IDENTIFICAÇÃO PESSOAL</div>
     </div>
 
     <script>
-        // Lógica simples para selecionar as carinhas
-        const buttons = document.querySelectorAll('.emoji-btn');
-        let selectedValue = null;
+        const N8N_WEBHOOK_URL = 'https://ajuda.app.n8n.cloud/webhook/technical-support';
 
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                buttons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedValue = btn.title;
-            });
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('input');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+        const voiceToggle = document.getElementById('voiceToggle');
+        const moodRow = document.getElementById('moodRow');
+
+        const sessionId = 'anon-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        let history = [];
+        let mood = null;
+        let voiceEnabled = true;
+        let recognizing = false;
+
+        // ---- Voz: síntese (TTS) ----
+        let ptVoice = null;
+        function loadVoice() {
+            const voices = speechSynthesis.getVoices();
+            ptVoice = voices.find(v => v.lang === 'pt-BR') || voices.find(v => v.lang.startsWith('pt')) || null;
+        }
+        speechSynthesis.onvoiceschanged = loadVoice;
+        loadVoice();
+
+        function speak(text) {
+            if (!voiceEnabled || !('speechSynthesis' in window)) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'pt-BR';
+            if (ptVoice) u.voice = ptVoice;
+            u.rate = 1.02; u.pitch = 1;
+            speechSynthesis.speak(u);
+        }
+
+        voiceToggle.onclick = () => {
+            voiceEnabled = !voiceEnabled;
+            voiceToggle.classList.toggle('muted', !voiceEnabled);
+            voiceToggle.innerHTML = voiceEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+            if (!voiceEnabled) speechSynthesis.cancel();
+        };
+
+        // ---- Voz: reconhecimento (STT) ----
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SR) {
+            recognition = new SR();
+            recognition.lang = 'pt-BR';
+            recognition.interimResults = true;
+            recognition.continuous = false;
+
+            recognition.onresult = (e) => {
+                let txt = '';
+                for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+                input.value = txt;
+            };
+            recognition.onend = () => { recognizing = false; micBtn.classList.remove('recording'); };
+            recognition.onerror = () => { recognizing = false; micBtn.classList.remove('recording'); };
+        } else {
+            micBtn.title = 'Seu navegador não suporta voz — use o texto';
+        }
+
+        micBtn.onclick = () => {
+            if (!recognition) { addMsg('bot', 'Seu navegador não suporta gravação de voz. Pode escrever normalmente.'); return; }
+            if (recognizing) { recognition.stop(); return; }
+            speechSynthesis.cancel();
+            recognizing = true;
+            micBtn.classList.add('recording');
+            recognition.start();
+        };
+
+        // ---- UI helpers ----
+        function addMsg(role, text) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+            div.textContent = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'msg bot typing';
+            div.innerHTML = 'Analisando<span>.</span><span>.</span><span>.</span>';
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
+
+        // ---- Humor inicial ----
+        moodRow.querySelectorAll('.mood-btn').forEach(b => {
+            b.onclick = () => {
+                moodRow.querySelectorAll('.mood-btn').forEach(x => x.classList.remove('active'));
+                b.classList.add('active');
+                mood = b.dataset.mood;
+                input.disabled = false; sendBtn.disabled = false; micBtn.disabled = false;
+                input.focus();
+                const greet = `Entendi, você está se sentindo ${mood.toLowerCase()}. Pode me contar o que aconteceu ou o que gostaria de sugerir?`;
+                addMsg('bot', greet);
+                speak(greet);
+            };
         });
 
-       async function enviarFeedback() {
-    const sugestao = document.getElementById('sugestao').value;
-    const btnEnviar = document.querySelector('.submit-btn');
+        // ---- Envio ----
+        async function send() {
+            const text = input.value.trim();
+            if (!text) return;
+            addMsg('user', text);
+            history.push({ role: 'user', content: text });
+            input.value = '';
+            input.style.height = 'auto';
+            sendBtn.disabled = true; micBtn.disabled = true;
 
-    if (!selectedValue) {
-        alert("Por favor, selecione uma carinha antes de enviar.");
-        return;
-    }
+            const typing = showTyping();
+            try {
+                const res = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId, mood, message: text, history })
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                const reply = data.reply || data.output || 'Recebi sua mensagem. Obrigado pelo retorno.';
+                typing.remove();
+                addMsg('bot', reply);
+                history.push({ role: 'assistant', content: reply });
+                speak(reply);
+            } catch (err) {
+                typing.remove();
+                addMsg('bot', 'Falha na conexão com a central. Sua mensagem não foi registrada — tente novamente.');
+                console.error(err);
+            } finally {
+                sendBtn.disabled = false; micBtn.disabled = false;
+            }
+        }
 
-    // Feedback visual de carregamento
-    btnEnviar.innerText = "ENVIANDO...";
-    btnEnviar.style.opacity = "0.5";
-    btnEnviar.disabled = true;
-
-    const url = 'SUA_URL_DO_DEPLOY_AQUI'; // Você vai colar a URL aqui depois
-
-    const dados = {
-        data: new Date().toLocaleString('pt-BR'),
-        satisfacao: selectedValue,
-        sugestao: sugestao
-    };
-
-    try {
-        await fetch(url, {
-            method: 'POST',
-            mode: 'no-cors', // Importante para Google Apps Script
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
+        sendBtn.onclick = send;
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
         });
-
-        alert("Relatório enviado com sucesso, Agente!");
-        
-        // Limpar formulário
-        document.getElementById('sugestao').value = "";
-        buttons.forEach(b => b.classList.remove('active'));
-        selectedValue = null;
-
-    } catch (error) {
-        alert("Erro na conexão com a central.");
-        console.error(error);
-    } finally {
-        btnEnviar.innerText = "ENVIAR RELATÓRIO";
-        btnEnviar.style.opacity = "1";
-        btnEnviar.disabled = false;
-    }
-}
+        input.addEventListener('input', () => {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+        });
     </script>
 </body>
 </html>
