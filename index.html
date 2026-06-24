@@ -372,7 +372,7 @@
                 const res = await fetch("https://ajuda.app.n8n.cloud/webhook/technical-support", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sessionId, mood, message: text, history })
+                    body: JSON.stringify({ sessionId, mood, question, message: text, history })
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const reply = (await res.text()).trim() || 'Recebi sua mensagem. Obrigado pelo retorno.';
