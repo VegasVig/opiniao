@@ -119,6 +119,7 @@
             font-size: 1rem;
             line-height: 1.45;
             animation: fadeIn 0.3s ease;
+            word-wrap: break-word;
         }
         @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
 
@@ -170,6 +171,7 @@
         }
         textarea {
             flex: 1;
+            min-height: 48px;
             background: rgba(0,0,0,0.35);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
@@ -183,6 +185,7 @@
             transition: 0.2s;
         }
         textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,242,255,0.12); }
+        textarea::placeholder { white-space: nowrap; }
 
         .icon-btn {
             width: 48px; height: 48px;
@@ -221,7 +224,7 @@
 <body>
     <div class="container">
         <header>
-            <img src="./assets/logovegas.png" alt="Vegas Vigilância"
+            <img src="https://vegasvigilancia.com.br/wp-content/uploads/2023/01/logo.png" alt="Vegas Vigilância"
                  onerror="this.style.display='none'">
             <h1>Central de Escuta</h1>
             <div class="sub"><span class="status-dot"></span>CANAL SEGURO • 100% ANÔNIMO</div>
@@ -229,7 +232,7 @@
 
         <div class="chat" id="chat">
             <div class="msg bot">
-                Olá, funcionário. Este é um canal anônimo e seguro. Comece escolhendo como você se sente hoje 👇
+                Olá, Agente. Este é um canal anônimo e seguro. Comece escolhendo como você se sente hoje 👇
             </div>
             <div class="mood-row" id="moodRow">
                 <button class="mood-btn angry" data-mood="Insatisfeito" title="Insatisfeito"><i class="fas fa-frown"></i></button>
@@ -240,7 +243,7 @@
 
         <div class="input-bar">
             <button class="voice-toggle" id="voiceToggle" title="Ativar/desativar voz"><i class="fas fa-volume-up"></i></button>
-            <textarea id="input" rows="1" placeholder="Escreva ou use o microfone..." disabled></textarea>
+            <textarea id="input" rows="1" placeholder="Escreva ou fale..." disabled></textarea>
             <button class="icon-btn mic-btn" id="micBtn" title="Gravar áudio" disabled><i class="fas fa-microphone"></i></button>
             <button class="icon-btn send-btn" id="sendBtn" title="Enviar" disabled><i class="fas fa-paper-plane"></i></button>
         </div>
@@ -248,7 +251,7 @@
     </div>
 
     <script>
-        const N8N_WEBHOOK_URL = 'https://ajuda.app.n8n.cloud/webhook/technical-support';
+        const N8N_WEBHOOK_URL = 'https://vegon4.app.n8n.cloud/webhook/technical-support';
 
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
@@ -303,7 +306,11 @@
                 for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
                 input.value = txt;
             };
-            recognition.onend = () => { recognizing = false; micBtn.classList.remove('recording'); };
+            recognition.onend = () => {
+                recognizing = false;
+                micBtn.classList.remove('recording');
+                if (input.value.trim()) send();
+            };
             recognition.onerror = () => { recognizing = false; micBtn.classList.remove('recording'); };
         } else {
             micBtn.title = 'Seu navegador não suporta voz — use o texto';
@@ -362,18 +369,17 @@
 
             const typing = showTyping();
             try {
-                const res = await fetch(N8N_WEBHOOK_URL, {
+                const res = await fetch("https://ajuda.app.n8n.cloud/webhook/technical-support", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                   body: JSON.stringify({ sessionId, mood, question: text, history })
+                    body: JSON.stringify({ sessionId, mood, message: text, history })
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
-                const data = await res.json();
-                const reply = data.reply || data.output || 'Recebi sua mensagem. Obrigado pelo retorno.';
+                const reply = (await res.text()).trim() || 'Recebi sua mensagem. Obrigado pelo retorno.';
                 typing.remove();
                 addMsg('bot', reply);
                 history.push({ role: 'assistant', content: reply });
-                speak(reply);
+                speak(reply.replace(/<[^>]+>/g, ''));
             } catch (err) {
                 typing.remove();
                 addMsg('bot', 'Falha na conexão com a central. Sua mensagem não foi registrada — tente novamente.');
