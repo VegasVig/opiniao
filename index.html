@@ -631,11 +631,35 @@
             showMoodRow();
         }
 
+        // Muitos navegadores bloqueiam fala automática (TTS) antes de qualquer
+        // interação do usuário. Isso "destrava" o áudio no primeiro toque/clique.
+        let audioUnlocked = false;
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            const silent = new SpeechSynthesisUtterance(' ');
+            silent.volume = 0;
+            speechSynthesis.speak(silent);
+            if (speakQueue.length && voicesReady) {
+                const pending = speakQueue.slice();
+                speakQueue = [];
+                pending.forEach(t => speak(t));
+            }
+        }
+        ['click', 'touchstart', 'keydown'].forEach(evt =>
+            document.addEventListener(evt, unlockAudio, { once: true })
+        );
+
         // ============ Voz: síntese (TTS) ============
         let ptVoice = null;
+        let voicesReady = false;
+        let speakQueue = [];
+        let keepAliveTimer = null;
 
         function loadVoice() {
             const voices = speechSynthesis.getVoices();
+            if (!voices || voices.length === 0) return;
+
             ptVoice =
                 voices.find(v => v.name.includes('Francisca')) ||
                 voices.find(v => v.name.includes('Google português')) ||
@@ -643,14 +667,44 @@
                 voices.find(v => v.lang === 'pt-BR') ||
                 voices.find(v => v.lang.startsWith('pt')) ||
                 voices[0];
+
+            voicesReady = true;
+
+            if (speakQueue.length && audioUnlocked) {
+                const pending = speakQueue.slice();
+                speakQueue = [];
+                pending.forEach(t => speak(t));
+            }
         }
 
         speechSynthesis.onvoiceschanged = loadVoice;
         loadVoice();
+        let voicePollTries = 0;
+        const voicePoll = setInterval(() => {
+            voicePollTries++;
+            if (voicesReady || voicePollTries > 20) { clearInterval(voicePoll); return; }
+            loadVoice();
+        }, 250);
+
+        function _startKeepAlive() {
+            clearInterval(keepAliveTimer);
+            keepAliveTimer = setInterval(() => {
+                if (speechSynthesis.speaking && !speechSynthesis.paused) {
+                    speechSynthesis.pause();
+                    speechSynthesis.resume();
+                } else {
+                    clearInterval(keepAliveTimer);
+                }
+            }, 12000);
+        }
 
         function speak(text) {
-            if (!voiceEnabled) return;
-            speechSynthesis.cancel();
+            if (!voiceEnabled || !text) return;
+
+            if (!voicesReady || !audioUnlocked) {
+                if (!speakQueue.includes(text)) speakQueue.push(text);
+                return;
+            }
 
             const fala = new SpeechSynthesisUtterance(text);
             fala.voice = ptVoice;
@@ -659,11 +713,15 @@
             fala.pitch = 1.02;
             fala.volume = 1;
 
-            fala.onstart = () => speakingIndicator.classList.add('active');
-            fala.onend = () => speakingIndicator.classList.remove('active');
-            fala.onerror = () => speakingIndicator.classList.remove('active');
+            fala.onstart = () => { speakingIndicator.classList.add('active'); _startKeepAlive(); };
+            fala.onend = () => { speakingIndicator.classList.remove('active'); clearInterval(keepAliveTimer); };
+            fala.onerror = () => { speakingIndicator.classList.remove('active'); clearInterval(keepAliveTimer); };
 
-            speechSynthesis.speak(fala);
+            speechSynthesis.cancel();
+            setTimeout(() => {
+                if (!voiceEnabled) return;
+                speechSynthesis.speak(fala);
+            }, 60);
         }
 
         voiceToggle.onclick = () => {
