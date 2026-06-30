@@ -584,7 +584,7 @@
         <div class="chat" id="chat"></div>
 
         <div class="input-bar">
-            <button class="voice-toggle" id="voiceToggle" title="Ativar/desativar voz"><i
+            <button class="voice-toggle" id="voiceToggle" title="Fazer a Vega não falar"><i
                     class="fas fa-volume-up"></i></button>
             <textarea id="input" rows="1" placeholder="Escreva ou fale..." disabled></textarea>
             <button class="icon-btn mic-btn" id="micBtn" title="Gravar áudio" disabled><i
@@ -654,18 +654,18 @@
         let ptVoice = null;
         let voicesReady = false;
         let speakQueue = [];
-        let keepAliveTimer = null;
 
         function loadVoice() {
             const voices = speechSynthesis.getVoices();
             if (!voices || voices.length === 0) return;
 
+            // Usa a voz padrão do próprio sistema/navegador em pt-BR (sem forçar nome específico)
             ptVoice =
-                voices.find(v => v.name.includes('Francisca')) ||
-                voices.find(v => v.name.includes('Google português')) ||
-                voices.find(v => v.name.includes('Maria')) ||
+                voices.find(v => v.lang === 'pt-BR' && v.default) ||
                 voices.find(v => v.lang === 'pt-BR') ||
-                voices.find(v => v.lang.startsWith('pt')) ||
+                voices.find(v => v.lang && v.lang.startsWith('pt') && v.default) ||
+                voices.find(v => v.lang && v.lang.startsWith('pt')) ||
+                voices.find(v => v.default) ||
                 voices[0];
 
             voicesReady = true;
@@ -686,16 +686,11 @@
             loadVoice();
         }, 250);
 
-        function _startKeepAlive() {
-            clearInterval(keepAliveTimer);
-            keepAliveTimer = setInterval(() => {
-                if (speechSynthesis.speaking && !speechSynthesis.paused) {
-                    speechSynthesis.pause();
-                    speechSynthesis.resume();
-                } else {
-                    clearInterval(keepAliveTimer);
-                }
-            }, 12000);
+        // Quebra o texto em frases para encadear utterances curtas — evita o bug
+        // de navegadores (sobretudo Chrome) que cortam falas longas no meio.
+        function splitIntoSentences(text) {
+            const parts = text.match(/[^.!?\n]+[.!?\n]*/g) || [text];
+            return parts.map(p => p.trim()).filter(Boolean);
         }
 
         function speak(text) {
@@ -706,22 +701,31 @@
                 return;
             }
 
-            const fala = new SpeechSynthesisUtterance(text);
-            fala.voice = ptVoice;
-            fala.lang = 'pt-BR';
-            fala.rate = 0.97;
-            fala.pitch = 1.02;
-            fala.volume = 1;
-
-            fala.onstart = () => { speakingIndicator.classList.add('active'); _startKeepAlive(); };
-            fala.onend = () => { speakingIndicator.classList.remove('active'); clearInterval(keepAliveTimer); };
-            fala.onerror = () => { speakingIndicator.classList.remove('active'); clearInterval(keepAliveTimer); };
-
             speechSynthesis.cancel();
-            setTimeout(() => {
-                if (!voiceEnabled) return;
+
+            const sentences = splitIntoSentences(text);
+            let idx = 0;
+
+            function speakNext() {
+                if (!voiceEnabled || idx >= sentences.length) {
+                    speakingIndicator.classList.remove('active');
+                    return;
+                }
+                const fala = new SpeechSynthesisUtterance(sentences[idx]);
+                if (ptVoice) fala.voice = ptVoice;
+                fala.lang = 'pt-BR';
+                fala.rate = 1;
+                fala.pitch = 1;
+                fala.volume = 1;
+
+                fala.onstart = () => speakingIndicator.classList.add('active');
+                fala.onend = () => { idx++; speakNext(); };
+                fala.onerror = () => { idx++; speakNext(); };
+
                 speechSynthesis.speak(fala);
-            }, 60);
+            }
+
+            setTimeout(speakNext, 60);
         }
 
         voiceToggle.onclick = () => {
@@ -769,13 +773,8 @@
             recognition.start();
         };
 
-        // Também interrompe a fala da IA ao começar a digitar
-        input.addEventListener('keydown', () => {
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-                speakingIndicator.classList.remove('active');
-            }
-        });
+        // Obs: a fala da Vega só é interrompida quando o usuário ativa o microfone
+        // de verdade (abaixo), não apenas por tocar/digitar na tela.
 
         // ============ UI helpers ============
         function formatTime() {
